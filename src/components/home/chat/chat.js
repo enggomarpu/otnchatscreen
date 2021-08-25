@@ -8,17 +8,26 @@ import { faChevronLeft } from '@fortawesome/free-solid-svg-icons'
 import Message from './message/message'
 import './chat.css'
 import { ChatContext } from '../../../context/chat-context'
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons'
+import ImagePicker from '../../../helpers/imagePicker/imagePicker'
 
 const Chat = (props) => {
 
 
   const [scrollWidth, setScrollWidth] = useState()
   const [scrollHeight, setScrollHeight] = useState()
+
   const [dataProvider, setDataProvider] = useState(new DataProvider((r1, r2) => {
     return r1 !== r2 || r1.send_state !== r2.send_state
   }))
 
+
+  
+
   const [layoutProvider, setLayoutProvider] = useState([])
+  const [allChatMessages, setAllChatMessages] = useState([])
+  const [messageText, setMessageText] = useState('')
+  const [alert1, setAlert] = useState(false)
 
   const { loggedInUser, selectedDialog, chatUsers, chatMessages, sendMessage,
     getDialogById, getOccupants, getMessages } = useContext(ChatContext)
@@ -27,14 +36,18 @@ const Chat = (props) => {
 
   const currentDialog = selectedDialog
 
+  const changeMessage = event => {setMessageText(event.target.value)}
+
   useEffect(() => {
 
     let scrollW = document.getElementById('chat-body').clientWidth
     setScrollWidth(scrollW)
     let scrollH = document.getElementById('chat-body').clientHeight
     setScrollHeight(scrollH)
-
-    getDialogInfo()
+    
+    if(!alert1){
+      getDialogInfo()
+    }
 
   }, [])
 
@@ -43,6 +56,7 @@ const Chat = (props) => {
     router('/home')
   }
   const getDialogInfo = () => {
+
     const dialog = selectedDialog
     getOccupants(dialog.occupants_ids).then(() => {
 
@@ -51,9 +65,8 @@ const Chat = (props) => {
     getMessages(dialog)
       .catch(e => alert(`Error.\n\n${JSON.stringify(e)}`))
       .then((amountMessages) => {
-        console.log('allchatmessages', amountMessages)
 
-
+        console.log('chat messages in chat', chatMessages)
         //setLayoutProvider(DialogLayoutUtil.getDialogLayoutProvider(930))
         if (amountMessages[dialog.id] !== undefined && Object.keys(amountMessages[dialog.id]).length !== 0) {
           
@@ -62,7 +75,9 @@ const Chat = (props) => {
             dialogId: dialog.id,
             currentUserId: loggedInUser.id
           }))
-          setDataProvider(dataProvider.cloneWithRows(amountMessages[dialog.id]))
+          console.log('chat messages', chatMessages)
+          setAllChatMessages(amountMessages[dialog.id])
+          setDataProvider(dataProvider.cloneWithRows(chatMessages[dialog.id]))
           
         }
 
@@ -164,10 +179,24 @@ const Chat = (props) => {
     //   messagesListRef.scrollToIndex(dataProvider._data.length - 1, false)
     // }
   }
-  const sendMessageCallback = async (messageText, img) => {
+  const sendMessageCallback = async (messageTx, img) => {
+    console.log('message', messageTx)
     const dialog = selectedDialog
-    if (messageText.length <= 0 && !img) return
-    await sendMessage(dialog, messageText, img, scrollToBottom)
+    if (messageTx.length <= 0 && !img) return
+    await sendMessage(dialog, messageTx, img, scrollToBottom)
+  }
+  const sendMessageCallBackLocal = (e) => {
+    e.preventDefault()
+    console.log('message', messageText)
+    sendMessageCallback(messageText).then(()=>{
+      setMessageText('')
+      setAlert(true)
+    }).catch(()=>{
+      alert('error occured')
+    })
+  }
+  const getImage = (image) => {
+   sendMessageCallback(image).then(()=>{}).catch(()=>{})
   }
   return (
     <div className="chat-container" >
@@ -184,7 +213,9 @@ const Chat = (props) => {
       <div className="chat-body" id="chat-body">
         {true ?
           dataProvider._data.length > 0 &&
+          
           <>
+          <div>hello</div>
             <RecyclerListView
               style={{
                 width: scrollWidth,
@@ -202,7 +233,22 @@ const Chat = (props) => {
         }
 
       </div>
-      <ChatInput sendMessageCallback={sendMessageCallback} />
+      <footer>
+        <form onSubmit={sendMessageCallBackLocal}>
+          <input
+            type="text"
+            value={messageText}
+            onChange={changeMessage}
+            placeholder="Write your message..."
+            name="search" />
+          <div className="chat-attachment">
+            <ImagePicker pickAsAttachment getImage={getImage} />
+          </div>
+          <button type='submit'>
+            <FontAwesomeIcon icon={faPaperPlane} color={'white'} />
+          </button>
+        </form>
+      </footer>
     </div>
   )
 }

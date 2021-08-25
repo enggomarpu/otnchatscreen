@@ -26,16 +26,19 @@ const Home = (props) => {
   useEffect(()=>{
 
     setUpListeners()
-    //props.history.replace("/home")
+    props.history.replace("/home")
     console.log('useEffect', window.innerWidth)
     let isMounted = true; 
+
+    setWindowWidth(window.innerWidth)
+    setRouteURL(props.match.url)
+    
     if(isMounted){
-      setWindowWidth(window.innerWidth)
-      setRouteURL(props.match.url)
+     
     }
     
    
-      return () => { isMounted = false }
+    //return () => { isMounted = false }
   }, [])
   
   const changeRouter = (router) => {

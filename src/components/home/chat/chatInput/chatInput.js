@@ -1,48 +1,49 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons'
 import ImagePicker from '../../../../helpers/imagePicker/imagePicker'
 import './chatInput.css'
 
-export default class ChatInput extends PureComponent {
-  state = {
-    messageText: ''
-  }
+const ChatInput = (props) => {
+  
+  // const [messageText, setMessageText] = useState('')
 
-  changeMessage = event => (this.setState({ messageText: event.target.value }))
+  // const changeMessage = event => (setMessageText(event.target.value))
 
-  sendMessage = (e) => {
-    e.preventDefault()
-    this.props.sendMessageCallback(this.state.messageText)
-      .then(() => (this.setState({ messageText: '' })))
-      .catch(() => (this.setState({ messageText: '' })))
-  }
+  // const sendMessage = (e) => {
 
-  getImage = (image) => {
-    this.props.sendMessageCallback(this.state.messageText, image)
-      .then(() => (this.setState({ messageText: '' })))
-      .catch(() => (this.setState({ messageText: '' })))
-  }
+  //   e.preventDefault()
+  //   props.sendMessageCallback(messageText)
+  //     .then(() => (setMessageText('')))
+  //     .catch(() => (setMessageText('')))
+  // }
 
-  render() {
-    const { messageText } = this.state
+  // const getImage = (image) => {
+  //   props.sendMessageCallback(this.state.messageText, image)
+  //     .then(() => (this.setState({ messageText: '' })))
+  //     .catch(() => (this.setState({ messageText: '' })))
+  // }
+
+
+    
     return (
       <footer>
-        <form onSubmit={this.sendMessage}>
+        {/* <form onSubmit={sendMessageCallback}>
           <input
             type="text"
             value={messageText}
-            onChange={this.changeMessage}
+            onChange={changeMessage}
             placeholder="Write your message..."
             name="search" />
           <div className="chat-attachment">
-            <ImagePicker pickAsAttachment getImage={this.getImage} />
+            <ImagePicker pickAsAttachment getImage={getImage} />
           </div>
-          <button onClick={this.sendMessage}>
+          <button onClick={sendMessage}>
             <FontAwesomeIcon icon={faPaperPlane} color={'white'} />
           </button>
-        </form>
+        </form> */}
       </footer>
     );
   }
-}
+
+  export default ChatInput

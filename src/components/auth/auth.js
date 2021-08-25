@@ -89,7 +89,7 @@ const Auth = (props) => {
             </div>
           }
           {isAuthorization &&
-            <Redirect to="/otn" />
+            <Redirect to="/home" />
           }
           <div className="auth-logo">
             <img src={logo} alt="Logo" />

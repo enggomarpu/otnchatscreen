@@ -50,15 +50,15 @@ const Dialog = (props) => {
   const getAllDialogs = () => {
     let isMounted = true; 
     fetchDialogsFromServer().then((dialogs) => {
-      if(isMounted){
+      //if(isMounted){
       setAllDialogs(dialogs)
       setIsLoader(false)
       setIsAlredy(true)
       let sWidth = document.getElementById('dialog-info-container').clientWidth
       setLayoutProvider(DialogLayoutUtil.getDialogLayoutProvider(sWidth))
       setDataProvider(dataProvider.cloneWithRows(dialogs))
-      }
-      return () => { isMounted = false };
+      //}
+      //return () => { isMounted = false };
     })
   }
 

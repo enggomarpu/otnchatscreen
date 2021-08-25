@@ -16,7 +16,7 @@ const ChatContextProvider = ({ children }) => {
 
   const [chatSession, setChatSession] = useState({})
   const [loggedInUser, setLoggedInUser] = useState({})
-  const [chatMessages, setChatMessages] = useState({'hello' : 'pakistan'})
+  const [chatMessages, setChatMessages] = useState({})
   const [chatDialogs, setChatDialogs] = useState([])
   const [chatUsers, setChatUsers] = useState({})
   const [selectedDialog, setSelectedDialog] = useState()
@@ -29,17 +29,19 @@ const ChatContextProvider = ({ children }) => {
   }, [])
 
   const setUpListeners = () => {
-    //ConnectyCube.chat.onMessageListener = onMessageListener
+    ConnectyCube.chat.onMessageListener = onMessageListener
     //ConnectyCube.chat.onSentMessageCallback = this.onSentMessageListener.bind(this)
     //ConnectyCube.chat.onDeliveredStatusListener = this.onDeliveredStatus.bind(this)
     //ConnectyCube.chat.onReadStatusListener = this.onReadStatus.bind(this)
   }
 
   const onMessageListener = async (senderId, msg) => {
+
+    console.log('chat messages in context', chatMessages)
     const message = new Message(msg)
     const user = loggedInUser
     console.log('dialoglistener', selectedDialog)
-    const dialog = selectedDialog.id
+    const dialog = selectedDialog && selectedDialog.id
 
     // If group chat alet
     if (msg.extension.group_chat_alert_type) {
@@ -62,6 +64,9 @@ const ChatContextProvider = ({ children }) => {
         //this.sendDeliveredStatus(msg.extension.message_id, msg.extension.sender_id, msg.dialog_id)
         //store.dispatch(sortDialogs(message, true))
       }
+      console.log('id', message.dialog_id)
+      
+      console.log('chat', chatMessages[message.dialog_id], '')
       setChatMessages({[message.dialog_id]: [...chatMessages[message.dialog_id] || [], message]})
       // store.dispatch(pushMessage(message, message.dialog_id))
     }
@@ -77,7 +82,7 @@ const ChatContextProvider = ({ children }) => {
     if (checkUserSessionFromStore) {
       const data = JSON.parse(checkUserSessionFromStore)
       await signIn({ login: data.login, password: data.password })
-      return 'otn'
+      return 'home'
     } else { return 'auth' }
   }
 
@@ -231,7 +236,7 @@ const ChatContextProvider = ({ children }) => {
       })
 
       const newObj = Object.assign(dialog, { isAlreadyMessageFetch: true })
-      //this.updateDialogsUnreadMessagesCount(newObj)
+      //updateDialogsUnreadMessagesCount(newObj)
       //store.dispatch(fetchMessages(dialog.id, messages))
       console.log('message history', messagesIn )
       const reverted = messagesIn
@@ -260,7 +265,7 @@ const ChatContextProvider = ({ children }) => {
 
   const sendMessage = (dialog, messageText, attachments = false, scrollToBottom) => {
     const user = loggedInUser
-    const text = messageText.trim()
+    const text = messageText
     const date = Math.floor(Date.now() / 1000)
     const recipient_id = dialog.type === 3 ? dialog.occupants_ids.find(elem => elem != user.id)
       : dialog.xmpp_room_jid
@@ -278,7 +283,7 @@ const ChatContextProvider = ({ children }) => {
     }
 
     msg.id = messageUniqueId()
-
+    debugger;
     // If send message as Attachment
     if (attachments) {
       return this.sendMessageAsAttachment(dialog, recipient_id, msg, attachments, scrollToBottom)
@@ -288,11 +293,29 @@ const ChatContextProvider = ({ children }) => {
 
     const newObjFreez = Object.freeze(message)
 
-    setChatMessages({[dialog.id]: [...chatMessages[dialog.id] || [], newObjFreez]})
+    setChatMessages({[dialog.id]: [...chatMessages[dialog.id] || [], message]})
+    
     //await store.dispatch(pushMessage(newObjFreez, dialog.id))
     //scrollToBottom()
     ConnectyCube.chat.send(recipient_id, msg)
     //store.dispatch(sortDialogs(newObjFreez))
+  }
+
+
+  const updateDialogsUnreadMessagesCount = (dialog) => {
+    const updateObj = Object.assign(dialog, { unread_messages_count: 0 })
+    //updateDialog(updateObj)
+    setChatDialogs(updateDialog(updateObj))
+    //store.dispatch(updateDialog(updateObj))
+    return true
+  }
+  const updateDialog = (action) => {
+    const alreadyUpdatedDialog = chatDialogs.map(elem => {
+      if (elem.id === action.id) {
+        return Object.assign(elem, action)
+      } return elem
+    })
+    return [...alreadyUpdatedDialog]
   }
   const messageUniqueId = () => {
     return ConnectyCube.chat.helpers.getBsonObjectId()
